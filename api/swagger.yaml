@@ -1,0 +1,51 @@
+---
+swagger: "2.0"
+info:
+  description: "test app"
+  version: "0.0.2"
+  title: "testme"
+host: "apis.wavve.com"
+basePath: "/"
+schemes:
+- "https"
+produces:
+- "application/json"
+paths:
+  /testme:
+    get:
+      tags:
+      - "Demo"
+      summary: "Test Application"
+      description: "Just sample application"
+      operationId: "testme"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "contentid"
+        in: "query"
+        description: "검색하려는 contentid"
+        required: true
+        type: "string"
+        default: "AAAA"
+      responses:
+        200:
+          description: "success"
+          schema:
+            $ref: "#/definitions/testme"
+      x-swagger-router-controller: "Demo"
+definitions:
+  testme:
+    type: "object"
+    properties:
+      programtitle:
+        type: "string"
+        example: "프로그램 제목"
+        description: "프로그램 제목"
+      genre:
+        type: "string"
+        example: "장르"
+        description: "콘텐츠 장르"
+      contenttitle:
+        type: "string"
+        example: "회차 제목"
+        description: "회차 제목"
