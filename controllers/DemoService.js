@@ -6,6 +6,8 @@ let util2 = require('wavve-tool').util.util2;
 let jsonpathmap = require('jsonpathmap').engine;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// 설정 데이타
+///////////////////////////////////////////////////////////////////////////////////////////////////
 const redisConnections = {
   sentinels: [
     {host: 'redis-common-01.local.wavve.com', port: 26379},
@@ -42,6 +44,27 @@ const mongoConnections = [
     RedisTtl: 60
   }
 ];
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// 응답포멧
+///////////////////////////////////////////////////////////////////////////////////////////////////
+const resultStructure = {
+  programtitle: '$.programtitle',
+  genre: '$.genre.text',
+  contenttitle: '$.episodetitle'
+};
+
+const resultStructureMulti = {
+  count: '#[*]',
+  list: [
+    {
+      programtitle: '$[*].programtitle',
+      genre: '$[*].genre.text',
+      contenttitle: '$[*].episodetitle'
+    }
+  ]
+};
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 exports.init = function(callback)
 {
@@ -64,17 +87,49 @@ exports.testme = function(args, res, next) {
    * contentid String 검색하려는 contentid
    * returns testme
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "programtitle" : "프로그램 제목",
-  "genre" : "장르",
-  "contenttitle" : "회차 제목"
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
+
+  try
+  {
+    let contentid = args.contentid.value;
+
+    let queryObject = {
+      name: 'contents',
+      db: 'vod',
+      collection: 'supercontent',
+      query: {contentid: contentid},
+      sort: {},
+      fields: {_id:0, programtitle: 1, genre: 1, episodetitle: 1},
+      skip:0,
+      limit:100,
+      useRedis: true,
+      RedisTtl: 10
+    };
+
+    let queryObjectProgramID = {
+      name: 'contents',
+      db: 'vod',
+      collection: 'supercontent',
+      query: {programid: contentid},
+      sort: {},
+      fields: {_id:0, programtitle: 1, genre: 1, episodetitle: 1},
+      skip:0,
+      limit:100,
+      useRedis: true,
+      RedisTtl: 10
+    };
+
+    // myMongodb.find(resultStructure, function(err, result){
+    //   let resultData = jsonpathmap.jsonpathmap(resultStructure, result);
+    //   res.end(JSON.stringify(resultData, null, 2));
+    // });
+
+    myMongodb.find(queryObjectProgramID, function(err, result){
+      let resultData = jsonpathmap.jsonpathmap(resultStructureMulti, result);
+      res.end(JSON.stringify(resultData, null, 2));
+    });
+  }
+  catch(ex)
+  {
+    console.log('try-catch err='+ex);
   }
 }
-
