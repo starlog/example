@@ -17,6 +17,7 @@
     "js-yaml": "^3.3.0",
     "swagger-tools": "^0.10.4",
     "wavve-tool": "^1.0.13",
-    "jsonpathmap": "^1.1.1"
+    "jsonpathmap": "^1.1.1",
+    "async": "^3.2.0"
   }
 }
